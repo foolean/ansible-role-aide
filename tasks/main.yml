@@ -1,0 +1,76 @@
+# Copyright (c) 2023, Bennett Samowich <bennett@foolean.org>
+# All rights reserved
+# SPDX short identifier: BSD-3-Clause
+---
+
+# We put the entire role in a block so we can create
+# a role specific tag, which saves the caller from
+# having to do so in their playbook.
+- name: Role foolean/aide
+  block:
+
+    - name: CIS | Ensure AIDE is installed
+      become: true
+      ansible.builtin.package:
+        name: 'aide'
+        state: "{{ aide_state }}"
+
+    - name: Check for existing AIDE db
+      become: true
+      ansible.builtin.stat:
+        path: '/var/lib/aide/aide.db.gz'
+      register: 'aide_db'
+      changed_when: 'not aide_db.stat.exists'
+      notify: 'Initialize AIDE db'
+      when:
+        - aide_state == 'present'
+
+    - name: Ensure permissions on AIDE db are configured
+      become: true
+      ansible.builtin.file:
+        name: '/var/lib/aide/aide.db.gz'
+        owner: 'root'
+        group: 'root'
+        mode: '0600'
+      when:
+        - aide_state == 'present'
+        - aide_db.stat.exists
+
+    - name: Remove AIDE db path
+      become: true
+      ansible.builtin.file:
+        name: '/var/lib/aide'
+        state: absent
+      when:
+        - aide_state != 'present'
+
+    - name: Remove AIDE log
+      become: true
+      ansible.builtin.file:
+        name: '/var/log/aide'
+        state: absent
+      when:
+        - aide_state != 'present'
+
+    - name: CIS | Ensure filesystem integrity is regularly checked
+      become: true
+      ansible.builtin.template:
+        src: 'etc/cron.d/aide.j2'
+        dest: '/etc/cron.d/aide'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+      when:
+        - aide_state == 'present'
+
+    - name: Remove AIDE cron.d schedule
+      become: true
+      ansible.builtin.file:
+        name: '/etc/cron.d/aide'
+        state: absent
+      when:
+        - aide_state != 'present'
+
+  # Tags to be applied to this role (block)
+  tags:
+    - 'role_foolean_aide'

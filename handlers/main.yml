@@ -1,0 +1,29 @@
+# Copyright (c) 2023, Bennett Samowich <bennett@foolean.org>
+# All rights reserved
+# SPDX short identifier: BSD-3-Clause
+---
+
+- name: Initialize AIDE db
+  become: true
+  ansible.builtin.command:
+    cmd: 'aide --init'
+  notify: Activate AIDE db
+  when:
+    - 'not aide_db.stat.exists'
+
+- name: Activate AIDE db
+  become: true
+  ansible.builtin.copy:
+    src: '/var/lib/aide/aide.db.new.gz'
+    remote_src: true
+    dest: '/var/lib/aide/aide.db.gz'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  notify: Remove AIDE newdb
+
+- name: Remove AIDE newdb
+  become: true
+  ansible.builtin.file:
+    name: '/var/lib/aide/aide.db.new.gz'
+    state: absent
