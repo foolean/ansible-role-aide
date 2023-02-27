@@ -3,13 +3,7 @@
 # SPDX short identifier: BSD-3-Clause
 ---
 
-# Specify whether or not AIDE should be installed or removed.
-#
-# Note:
-#   CIS Benchmarks specify that AIDE is to be installed. However,
-#   AIDE requires a level of tuning that this role is not yet
-#   prepared to handle.  It is for this reason that the default
-#   is 'absent' and we'll accept the audit finding.
-#
-# (default: absent)
-aide_state: 'absent'
+# Specify whether or not AIDE should be
+# installed (present) or removed (absent).
+# (default: present)
+aide_state: 'present'
