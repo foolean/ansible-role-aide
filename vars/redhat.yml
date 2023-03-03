@@ -1,0 +1,21 @@
+# Copyright (c) 2023, Bennett Samowich <bennett@foolean.org>
+# All rights reserved
+# SPDX short identifier: BSD-3-Clause
+---
+
+# aide_packages
+#   List of packages to be installed
+aide_packages:
+  - "aide"
+
+# aide_init_command
+#   Command used to initialize the AIDE database
+aide_init_command: "aide --init"
+
+# aide_new_db_file
+#   Name of the 'new' AIDE database file
+aide_new_db_file: "/var/lib/aide/aide.db.new.gz"
+
+# aide_cur_db_file
+#   Name of the 'current' AIDE database file
+aide_cur_db_file: "/var/lib/aide/aide.db.gz"

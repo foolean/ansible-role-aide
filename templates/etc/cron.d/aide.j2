@@ -12,4 +12,11 @@
 ###############################################################################
 
 # Check AIDE every day
+{% if ansible_os_family|lower == "redhat" %}
 0 5 * * * root /usr/sbin/aide --check
+{% elif ansible_os_family|lower == "debian" %}
+0 5 * * * root /usr/bin/aide.wrapper --config /etc/aide/aide.conf --check
+{% else %}
+# Unknown OS '{{ ansible_os_family }}', using default
+0 5 * * * root /usr/sbin/aide --check
+{% endif %}

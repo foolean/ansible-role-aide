@@ -9,16 +9,23 @@
 - name: Role foolean/aide
   block:
 
+    - name: Set OS variables
+      ansible.builtin.include_vars:
+        file: "{{ item }}"
+      with_first_found:
+        - "{{ ansible_os_family|lower }}.yml"
+        - "default.yml"
+
     - name: CIS | Ensure AIDE is installed
       become: true
       ansible.builtin.package:
-        name: 'aide'
+        name: "{{ aide_packages }}"
         state: "{{ aide_state }}"
 
     - name: Check for existing AIDE db
       become: true
       ansible.builtin.stat:
-        path: '/var/lib/aide/aide.db.gz'
+        path: "{{ aide_cur_db_file }}"
       register: 'aide_db'
       changed_when: 'not aide_db.stat.exists'
       notify: 'Initialize AIDE db'
@@ -28,7 +35,7 @@
     - name: Ensure permissions on AIDE db are configured
       become: true
       ansible.builtin.file:
-        name: '/var/lib/aide/aide.db.gz'
+        name: "{{ aide_cur_db_file }}"
         owner: 'root'
         group: 'root'
         mode: '0600'
@@ -70,6 +77,11 @@
         state: absent
       when:
         - aide_state != 'present'
+
+    # Flush any handlers that we might have called
+    - name: Flush handlers
+      ansible.builtin.meta:
+        flush_handlers
 
   # Tags to be applied to this role (block)
   tags:

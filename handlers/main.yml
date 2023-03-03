@@ -6,7 +6,7 @@
 - name: Initialize AIDE db
   become: true
   ansible.builtin.command:
-    cmd: 'aide --init'
+    cmd: "{{ aide_init_command }}"
   notify: Activate AIDE db
   when:
     - 'not aide_db.stat.exists'
@@ -14,9 +14,9 @@
 - name: Activate AIDE db
   become: true
   ansible.builtin.copy:
-    src: '/var/lib/aide/aide.db.new.gz'
+    src: "{{ aide_new_db_file }}"
     remote_src: true
-    dest: '/var/lib/aide/aide.db.gz'
+    dest: "{{ aide_cur_db_file }}"
     owner: 'root'
     group: 'root'
     mode: '0600'
@@ -25,5 +25,5 @@
 - name: Remove AIDE newdb
   become: true
   ansible.builtin.file:
-    name: '/var/lib/aide/aide.db.new.gz'
+    name: "{{ aide_new_db_file }}"
     state: absent
